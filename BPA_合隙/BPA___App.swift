@@ -1,27 +1,27 @@
-//___FILEHEADER___
-
 import SwiftUI
-import SwiftData
 
 @main
-struct ___PACKAGENAME:identifier___App: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+struct BetweenApp: App {
+    @State private var store: ConnectionStore
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+    init() {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-between-ui-testing") {
+            let defaults = UserDefaults(suiteName: "between.ui-tests")!
+            defaults.removePersistentDomain(forName: "between.ui-tests")
+            _store = State(initialValue: ConnectionStore(defaults: defaults))
+            return
         }
-    }()
+        #endif
+        _store = State(initialValue: ConnectionStore())
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(store)
+                .tint(Palette.text)
+                .preferredColorScheme(.dark)
         }
-        .modelContainer(sharedModelContainer)
     }
 }
